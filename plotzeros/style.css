@@ -1,6 +1,7 @@
 html, body {
   margin: 0;
-  padding: 2%;
+  padding-left: 2%;
+  padding-right: 2%;
   background: black;
   color: whitesmoke;
   font-family: "Open Sans", sans-serif;
