@@ -4,23 +4,27 @@ var ymin = -5.0;
 var ymax = 5.0;
 var value = 0.0;
 var epsilon = 0.1;
-var iterations = 8000;
+var iterations = 10000;
 
-var xminMax = 100, xminMin = -100;
-var xmaxMax = 100, xmaxMin = -100;
-var yminMax = 100, yminMin = -100;
-var ymaxMax = 100, ymaxMin = -100;
+var xminMax = 100, xminMin = -100, xminStep = 0.25;
+var xmaxMax = 100, xmaxMin = -100, xminStep = 0.25;
+var yminMax = 100, yminMin = -100, yminStep = 0.25;
+var ymaxMax = 100, ymaxMin = -100, ymaxStep = 0.25;
 
 var epsilonMin = 0, epsilonMax = 1, epsilonStep = 0.01;
 var valueMin = -10, valueMax = 10, valueStep = 0.01;
 var iterationsMax = 10000;
 
 var paramState = getParamState();
-
-var eq = "sin(y + x - y * tan(x))";
-var eqCode;
-
 var showAxis = false;
+
+var equations = [
+  "sin(y + x - y * tan(x))",
+  "x*x+(y-cbrt(x*x))*(y-cbrt(x*x))",
+  "atan(sin(x))-sin(y)"
+];
+var eq = equations[0];
+var eqCode;
 
 function f(x, y) {
   let scope = {
@@ -75,13 +79,21 @@ function refresh() {
   }
 }
 
+function createDropdown() {
+  dropdown = createSelect();
+  for (let i in equations) {
+    dropdown.option(equations[i]);
+  }
+  dropdown.changed(() => {eqInput.value(dropdown.value()); compileEquation();});
+}
+
 function setup() {
   width = windowWidth / 2;
   height = windowHeight / 2;
   let canvas = createCanvas(width, height);
   canvas.parent("sketch");
-  c1 = color(80,0,0);
-  c2 = color(220,20,60);
+  c1 = color(80, 0, 0);
+  c2 = color(220, 20, 60);
   gui = createGui('Settings');
   gui.addGlobals("value", "xmin", "xmax", "ymin", "ymax", "epsilon", "iterations", "showAxis");
   eqCode = math.compile(eq);
@@ -91,15 +103,18 @@ function setup() {
   eqSend = createButton("Send");
   eqSend.mousePressed(compileEquation);
   let info1 = createP("<em>Please only use x and y as variables! Also only basic math functions are available.</em>");
-  let info2 = createP("<h3>Usage: </h3>Use the settings gui to change parameters. <ul><li>Value is the right-side of the equation.</li><li>Epsilon is the distance to value from which points are drawn (hence the shading).</li><li>If |f(x,y)-value|<=epsilon then a point is drawn, the brighter it is, the closer it is from value.</li><li>Press R to redraw.</li></ul>");
-  let info3 = createP("<h3>Some interesting equations:</h3><ul><li>Default: sin(y + x - y * tan(x))</li><li>Heart: x*x+(y-cbrt(x*x))*(y-cbrt(x*x))  <small><i>(value=1)</i></small></li></ul> ");
-  
+  createDropdown();
+  let info2 = createP("<h3>Presets: </h3>");
+  let info3 = createP("<h3>Usage: </h3>Use the settings gui to change parameters. <ul><li>Value is the right-side of the equation.</li><li>Epsilon is the distance to value from which points are drawn (hence the shading).</li><li>If |f(x,y)-value|<=epsilon then a point is drawn, the brighter it is, the closer it is from value.</li><li>Press R to redraw.</li></ul>");
+  let info4 = createP("<h3>Some interesting equations (presets):</h3><ul><li>Default: sin(y + x - y * tan(x))</li><li>Heart: x*x+(y-cbrt(x*x))*(y-cbrt(x*x))  <small><i>(value=1)</i></small></li><li>Circles: atan(sin(x))-sin(y)</li></ul> ");
   div.child(label);
   div.child(eqInput);
   div.child(eqSend);
   div.child(info1);
   div.child(info2);
+  div.child(dropdown);
   div.child(info3);
+  div.child(info4);
   refresh();
 }
 
