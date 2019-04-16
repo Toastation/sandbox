@@ -1,6 +1,9 @@
+let t_min = -3;
+let t_max = 3;
+let epsilon;
 
 function f(x, y) {
-  
+  return [-(x*x) + x*t + y, x*x - (y*y) - (t*t) - x*y + y*t - x + y];
 }
 
 function setup() {
@@ -13,6 +16,6 @@ function setup() {
 }
 
 function draw() {
-  background(0);
+  
 
 }
