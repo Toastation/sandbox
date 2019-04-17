@@ -1,39 +1,36 @@
-let t_min = -3;
-let t_max = 3;
+let t_min = -1.5;
+let t_max = 1.5;
 let t = t_min;
 let nb_samples = 50;
 let offset_x = 0.0, offset_y = 0.0; 
-let s = 2;
-let espilon = 0.0005, speed_epsilon = 0.01;
+let s = 3;
+let espilon = 0.0005, speed_epsilon = 0.005;
 
+let hist_length = 10;
 let values = new Array(nb_samples);
+for (let i = 0; i < nb_samples; i++) {
+  values[i] = new Array(); 
+}
 
 function f(x, y) {
-  return [-(x*x) + x*t + y, x*x - (y*y) - (t*t) - x*y + y*t - x + y];
+  return createVector(-(x*x) + x*t + y, x*x - (y*y) - (t*t) - x*y + y*t - x + y);
 }
 
 function scl(x, y) {
-  let s1 = s * width / 2;
-  let s2 = s * height / 2;
-  return [(x - offset_x) * s1 + width / 2, (y - offset_y) * s2 + height / 2];
+  return createVector(map(x, -1, 1, 0, width), map(y, -1, 1, 0, height));
 }
 
-function center() {
-  let min_x = Infinity;
-  let max_x = -Infinity;
-  let min_y = Infinity;
-  let max_y = -Infinity;
-  for (let p of values) {
-    min_x = min(min_x, p[0]);
-    max_x = max(max_x, p[0]);
-    min_y = min(min_y, p[1]);
-    max_y = max(max_y, p[1]);
+function removeOffscreenPoints(i) {
+  for (let j = (values[i].length - 1); j >= 0; j--) {
+    if (values[i][j].x < 0 || values[i][j].x >= width || values[i][j].y < 0 || values[i][j].y >= height)
+      values[i].splice(j, 1);
   }
-  min_x = min(min_x, -4.0);
-  max_x = max(max_x, 4.0);
-  min_y = min(min_y, -4.0);
-  max_y = max(max_y, 4.0);
-  s = 1.0 / max(max(max_x - min_x, max_y - min_y), 0.1);
+}
+
+function keyPressed() {
+  if (key == 'r'){
+    console.log(values);
+  }
 }
 
 function setup() {
@@ -49,22 +46,38 @@ function draw() {
   background(0);
   strokeWeight(0);
   fill(255);
-  text("t="+t, 20, 20);
-  let ftt = f(t, t);
-  text("f(t,t)=["+ftt[0]+", "+ftt[1]+"]", 20, 35);
-  let x = t, y = t, inScreen = false;
+  textSize(10);
+  text("t = "+Math.round(t*1000)/1000, 20, height - 20);
+  let x = t, y = t, inScreen = false, count = 0;
   for (let i = 0; i < nb_samples; i++) {
     let res = f(x, y);
     let scaled_res = scl(x, y);
-    x = res[0];
-    y = res[1];
-    values[i] = res;
-    if (scaled_res[0] >= 0 && scaled_res[0] <= width && scaled_res[1] >= 0 && scaled_res[1] <= height) inScreen = true;
+    x = res.x; y = res.y;
+    if (values[i].length >= hist_length) values[i].splice(0, 1);
+    values[i].push(scaled_res);
+    if (scaled_res.x >= 0 && scaled_res.x <= width && scaled_res.y >= 0 && scaled_res.y <= height){
+      inScreen = true;
+      count++;
+      removeOffscreenPoints(i);
+    }
     fill(lerpColor(c1, c2, i / nb_samples));
-    circle(scaled_res[0], scaled_res[1], 2);
+    circle(scaled_res.x, scaled_res.y, 2);
   }
-  // center();
-  if (inScreen) t += espilon;
-  else t += speed_epsilon;
+
+  for (let i = 0; i < nb_samples; i++) {
+    let c = lerpColor(c1, c2, i / nb_samples);
+    fill(c)
+    for (let j in values[i]) {
+      c.setAlpha(map(j, 0, values[i].length-1, 0, 255));
+      circle(values[i][j].x, values[i][j].y, 1);
+    }
+  }
+
+  if (inScreen && count >= 15) {
+    t += espilon;
+  }
+  else {
+    t += speed_epsilon;
+  } 
   if (t >= t_max) t = t_min;
 }
