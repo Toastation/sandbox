@@ -27,12 +27,6 @@ function removeOffscreenPoints(i) {
   }
 }
 
-function keyPressed() {
-  if (key == 'r'){
-    console.log(values);
-  }
-}
-
 function setup() {
   width = windowWidth / 2;
   height = windowHeight / 2;
