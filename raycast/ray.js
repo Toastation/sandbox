@@ -2,8 +2,17 @@ class Ray {
 
     constructor(x, y, dirAngle) {
         this.pos = createVector(x, y);
-        this.dir = p5.Vector.fromAngle(radians(dirAngle));
-        this.angle = dirAngle;
+        this.setAngle(dirAngle);
+    }
+
+    setPos(x, y) {
+        this.pos.x = x;
+        this.pos.y = y;
+    }
+
+    setAngle(angle) {
+        this.angle = angle;
+        this.dir = p5.Vector.fromAngle(radians(this.angle));
     }
 
     render() {
