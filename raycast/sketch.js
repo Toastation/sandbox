@@ -3,36 +3,57 @@ const HEIGHT = 450;
 const PANEL_WIDTH = 400;
 const PANEL_HEIGHT = 400;
 const MENU_HEIGHT = 50;
+const NB_WALLS = 5;
 
 let cam;
 let walls;
 
-function setup() {
-    let canvas = createCanvas(WIDTH, HEIGHT);
-    canvas.parent("sketch");
+function initWalls() {
     walls = [];
     walls.push(new Wall(0, 0, PANEL_WIDTH-1, 0));
     walls.push(new Wall(PANEL_WIDTH-1, 0, PANEL_WIDTH-1, PANEL_HEIGHT-1));
     walls.push(new Wall(PANEL_WIDTH-1, PANEL_HEIGHT-1, 0, PANEL_HEIGHT-1));
     walls.push(new Wall(0, PANEL_HEIGHT-1, 0, 0));
-    walls.push(new Wall(200, 50, 250, 200));
+}
+
+function generateWalls() {
+    walls.splice(4, walls.length - 4);
+    for (let i = 0; i < NB_WALLS; i++) {
+        walls.push(new Wall(random(PANEL_WIDTH), random(PANEL_HEIGHT), random(PANEL_WIDTH), random(PANEL_HEIGHT)));
+    }
+}
+
+function setup() {
+    let canvas = createCanvas(WIDTH, HEIGHT);
+    canvas.parent("sketch");
+    randomSeed(0x123456);
+    initWalls();
+    generateWalls();
     cam = new Cam(100, 100, 45);
+    createP("<h5>Number of rays: </h5>");
+    sliderRays = createSlider(10, PANEL_WIDTH, PANEL_WIDTH, 1);
+    sliderRays.input(() => {const nbRays = sliderRays.value(); cam.setNbRays(nbRays); });
+    createP("<h5>FOV: </h5>");
+    sliderFOV = createSlider(0, 360, cam.fov, 1);
+    sliderFOV.input(() => {const fov = sliderFOV.value(); cam.setFov(fov); });
 }
 
 function draw() {
     background(0);
 
     noStroke();
+    fill(255);
     textSize(10);
     text("Rays = "+cam.nbRays, 10, 10);
     text("FOV = "+cam.fov, 10, 25);
+    text("Fisheye = "+cam.fishEye, 10, 40);
     translate(0, MENU_HEIGHT);
 
     cam.update();
     cam.cast(walls);
 
     if (cam.pos.x < 0) cam.setPos(0, cam.pos.y);
-    if (cam.pos.x > WIDTH-1) cam.setPos(WIDTH-1, cam.pos.y);
+    if (cam.pos.x > PANEL_WIDTH-1) cam.setPos(PANEL_WIDTH-1, cam.pos.y);
     if (cam.pos.y < 0) cam.setPos(cam.pos.x, 0);
     if (cam.pos.y > PANEL_HEIGHT-1) cam.setPos(cam.pos.x, PANEL_HEIGHT-1);
 
@@ -41,5 +62,16 @@ function draw() {
     }
 
     cam.renderTopView();
-    cam.renderScene(PANEL_WIDTH, PANEL_WIDTH, PANEL_HEIGHT);
+    translate(PANEL_WIDTH, 0);
+    cam.renderScene(PANEL_WIDTH, PANEL_HEIGHT);
+}
+
+function keyPressed() {
+    switch (key) {
+        case "R": case "r":
+            generateWalls();
+            break;
+        case "F": case "f":
+            cam.toggleFishEye();
+    }
 }

@@ -35,6 +35,10 @@ class Cam {
         this.updateRayPos();
     }
 
+    toggleFishEye() {
+        this.fishEye = !this.fishEye;
+    }
+
     initRays() {
         this.rays.splice(0, this.rays.length);
         for (let i = 0; i < this.nbRays; i++) {
@@ -81,11 +85,11 @@ class Cam {
                 let intersection = ray.getIntersection(wall);
                 if (!intersection) continue;
                 let distance = this.pos.dist(intersection);
+                if (!this.fishEye) distance *= cos(ray.dir.heading() - this.dir.heading());
                 if (distance < shortestDist) {
                     shortestDist = distance;
                     closestPoint = intersection;
                 }
-                if (!this.fishEye) shortestDist *= cos(ray.dir.heading() - this.dir.heading());
             }
             this.intersections[i] = shortestDist;
             if (closestPoint) {
@@ -107,17 +111,27 @@ class Cam {
         pop();
     }
 
-    renderScene(sceneOffset, sceneWidth, sceneHeight) {
-        push();
-        translate(sceneOffset, 0);
+    renderScene(sceneWidth, sceneHeight) {
+        // noStroke();
+        // rectMode(CORNER);
+        // strokeWeight(1);
+        // for (let y = sceneHeight / 2; y < sceneHeight; y++) {
+        //     stroke(map(y, sceneHeight / 2, sceneHeight, 0, 100));
+        //     line(0, y, sceneWidth, y);
+        // } 
+        // for (let y = 0; y < sceneHeight / 2; y++) {
+        //     stroke(map(y, 0, sceneHeight / 2, 100, 0));
+        //     line(0, y, sceneWidth, y);
+        // } 
         noStroke();
         rectMode(CENTER);
+        const stripe = sceneWidth / this.nbRays;
         for (let i = 0; i < this.nbRays; i++) {
             let ratio = this.intersections[i] / sceneWidth;
             let height = 30 / ratio;
+            if (height > sceneHeight) height = sceneHeight;
             fill(10 / ratio ** 2);
-            rect(i, sceneHeight / 2, 1, height);
+            rect((i + 0.5) * stripe, sceneHeight / 2, stripe, height);
         }
-        pop();
     }
 }
