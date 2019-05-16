@@ -5,8 +5,10 @@ class Cam {
         this.angle = 0;
         this.dir = p5.Vector.fromAngle(this.angle);
         this.rays = [];
+        this.intersections = [];
         this.nbRays = 400;
         this.setFov(fov);
+        this.fishEye = false;
     }
 
     setFov(fov) {
@@ -22,11 +24,8 @@ class Cam {
     setAngle(angle) {
         this.angle = angle;
         this.dir = p5.Vector.fromAngle(radians(this.angle));
-        const angleDelta = this.fov / this.nbRays;
-        let index = 0;
-        for (let i = this.angle - this.fov / 2; i < this.angle + this.fov / 2; i += angleDelta) {
-            this.rays[index].setAngle(i);
-            index++;
+        for (let i = 0; i < this.nbRays; i++) {
+            this.rays[i].setAngle(map(i, 0, this.nbRays-1, this.angle - this.fov / 2, this.angle + this.fov / 2));
         }
     }
 
@@ -37,10 +36,9 @@ class Cam {
     }
 
     initRays() {
-        const angleDelta = this.fov / this.nbRays;
         this.rays.splice(0, this.rays.length);
-        for (let i = this.angle - this.fov / 2; i < this.angle + this.fov / 2; i += angleDelta) {
-            this.rays.push(new Ray(this.pos.x, this.pos.y, i));
+        for (let i = 0; i < this.nbRays; i++) {
+            this.rays.push(new Ray(this.pos.x, this.pos.y, map(i, 0, this.nbRays-1, this.angle - this.fov / 2, this.angle + this.fov / 2)));            
         }
     }
 
@@ -75,7 +73,8 @@ class Cam {
     }
 
     cast(walls) {
-        for (let ray of this.rays) {
+        for (let i = 0; i < this.nbRays; i++) {
+            let ray = this.rays[i];
             let shortestDist = Infinity;
             let closestPoint;
             for (let wall of walls) {
@@ -86,7 +85,9 @@ class Cam {
                     shortestDist = distance;
                     closestPoint = intersection;
                 }
+                if (!this.fishEye) shortestDist *= cos(ray.dir.heading() - this.dir.heading());
             }
+            this.intersections[i] = shortestDist;
             if (closestPoint) {
                 strokeWeight(1);
                 fill(255);
@@ -95,7 +96,7 @@ class Cam {
         }
     }
 
-    render() {
+    renderTopView() {
         fill(255);
         ellipse(this.pos.x, this.pos.y, 5, 5);
         push();
@@ -103,6 +104,20 @@ class Cam {
         stroke(255, 0, 0);
         translate(this.pos.x, this.pos.y);
         line(0, 0, this.dir.x * 10, this.dir.y * 10);
+        pop();
+    }
+
+    renderScene(sceneOffset, sceneWidth, sceneHeight) {
+        push();
+        translate(sceneOffset, 0);
+        noStroke();
+        rectMode(CENTER);
+        const widthSq = sceneWidth * sceneWidth;
+        for (let i = 0; i < this.nbRays; i++) {
+            let height = map(cam.intersections[i], 0, sceneWidth, sceneHeight, 0);
+            fill(map(cam.intersections[i] * cam.intersections[i], 0, widthSq, 255, 0));
+            rect(i, sceneHeight / 2, 1, height);
+        }
         pop();
     }
 }

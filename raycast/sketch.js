@@ -31,5 +31,7 @@ function draw() {
     for (wall of walls) {
         wall.render();
     }
-    cam.render();
+
+    cam.renderTopView();
+    cam.renderScene(PANEL_WIDTH, PANEL_WIDTH, HEIGHT);
 }
