@@ -112,10 +112,10 @@ class Cam {
         translate(sceneOffset, 0);
         noStroke();
         rectMode(CENTER);
-        const widthSq = sceneWidth * sceneWidth;
         for (let i = 0; i < this.nbRays; i++) {
-            let height = map(cam.intersections[i], 0, sceneWidth, sceneHeight, 0);
-            fill(map(cam.intersections[i] * cam.intersections[i], 0, widthSq, 255, 0));
+            let ratio = this.intersections[i] / sceneWidth;
+            let height = 30 / ratio;
+            fill(10 / ratio ** 2);
             rect(i, sceneHeight / 2, 1, height);
         }
         pop();
