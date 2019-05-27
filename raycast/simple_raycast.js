@@ -39,6 +39,7 @@ function setup() {
     dir = p5.Vector.fromAngle(dirAngle);
     // plane = createVector(0, 0.66);
     fov = 90;
+    angleMode(DEGREES);
 }
 
 function draw() {
@@ -68,19 +69,53 @@ function renderTopView() {
 function cast() {
     noStroke();
     fill(255, 0, 0);
-    let rayDir = createVector();
-    let mapPos = createVector();
-    let sideDist = createVector();
-    let deltaDist = createVector();
-    let step = createVector();
-    let perpWallDist;
-    let height;
-    let hit = false;
-    let side;
     const deltaAngle = fov / PANEL_WIDTH;
-    for (let angle = dirAngle - fov / 2; angle < dirAngle + fov / 2; dirAngle += deltaAngle) {
-        
+    
+    let tilePos = createVector();
+    let mapPos = createVector();
+    let offset = createVector();
+    let tileStep = createVector();
+    let step = createVector();
+    let delta = createVector();
+    let intersection = createVector();   
+    let rayDir; 
+    for (let angle = dirAngle - fov / 2; angle < dirAngle + fov / 2; angle += deltaAngle) {
+        mapPos.x = pos.x / GRID_WIDTH;
+        mapPos.y = pos.y / GRID_HEIGHT;
+        tilePos.x = ceil(mapPos.x);
+        tilePos.y = ceil(mapPos.y);
+        offset.x = mapPos.x % 1;
+        offset.y = mapPos.y % 1;
+        rayDir = p5.Vector.fromAngle(radians(angle));
+        if (rayDir.x > 0) {
+            tileStep.x = 1;
+            step.x = tan(angle);
+            delta.y = 1 / tan(angle);
+        } else {
+            tileStep.x = -1;
+            step.x = -tan(angle);
+            delta.y = -1 / tan(angle);
+        }
+        if (rayDir.y > 0) {
+            tileStep.y = 1;
+            
+        } else {
+
+        }
     }
+    // const deltaAngle = fov / PANEL_WIDTH;
+    // for (let angle = dirAngle - fov / 2; angle < dirAngle + fov / 2; dirAngle += deltaAngle) {
+    //     console.log(angle);   
+    // }
+    // let rayDir = createVector();
+    // let mapPos = createVector();
+    // let sideDist = createVector();
+    // let deltaDist = createVector();
+    // let step = createVector();
+    // let perpWallDist;
+    // let height;
+    // let hit = false;
+    // let side;
     // for (let x = 0; x < PANEL_WIDTH; x++) {
         // let camX = (2 * x / PANEL_WIDTH) - 1;
         // rayDir.x = dir.x + plane.x * camX;
