@@ -70,13 +70,11 @@ function cast() {
     noStroke();
     fill(255, 0, 0);
     const deltaAngle = fov / PANEL_WIDTH;
-    
     let tilePos = createVector();
     let mapPos = createVector();
     let offset = createVector();
     let tileStep = createVector();
     let step = createVector();
-    let delta = createVector();
     let intersection = createVector();   
     let rayDir; 
     for (let angle = dirAngle - fov / 2; angle < dirAngle + fov / 2; angle += deltaAngle) {
@@ -89,18 +87,21 @@ function cast() {
         rayDir = p5.Vector.fromAngle(radians(angle));
         if (rayDir.x > 0) {
             tileStep.x = 1;
-            step.x = tan(angle);
-            delta.y = 1 / tan(angle);
+            step.y = 1 / tan(angle);
+            intersection.x = mapPos + offset.y / tan(angle);
         } else {
             tileStep.x = -1;
-            step.x = -tan(angle);
-            delta.y = -1 / tan(angle);
+            step.y = -1 / tan(angle);
+            intersection.x = mapPos - offset.y / tan(angle);
         }
         if (rayDir.y > 0) {
             tileStep.y = 1;
-            
+            step.x = tan(angle); 
+            intersection.y = mapPos + offset.y / tan(angle);
         } else {
-
+            tileStep.y = -1;
+            step.x = -tan(angle);
+            intersection.y = mapPos - offset.y / tan(angle);
         }
     }
     // const deltaAngle = fov / PANEL_WIDTH;
