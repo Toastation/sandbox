@@ -115,11 +115,11 @@ function cast() {
         }
         let dist, hit = createVector();
         if (side == 0) {
-            dist = (tilePos.x - floor(mapPos.x) + (1 - step.x) / 2) / rayDir.x;
+            dist = (tilePos.x - mapPos.x + (1 - step.x) / 2) / rayDir.x;
             hit.x = mapPos.x < tilePos.x ? tilePos.x : tilePos.x + 1;
-            hit.x = mapPos.y + dist * rayDir.y;
+            hit.y = mapPos.y + dist * rayDir.y;
         } else {
-            dist = (tilePos.y - floor(mapPos.y) + (1 - step.y) / 2) / rayDir.y;
+            dist = (tilePos.y - mapPos.y + (1 - step.y) / 2) / rayDir.y;
             hit.x = mapPos.x + dist * rayDir.x;
             hit.y = mapPos.y > tilePos.y ? tilePos.y + 1 : tilePos.y;
         }           
@@ -156,10 +156,17 @@ function renderTopView() {
     // draw cam
     fill(255);
     ellipse(pos.x, pos.y, 5, 5);
+    // draw rays
     strokeWeight(2);
+    for (let i = 0; i < stripes.length; i++) {
+        stroke(255, 0, 255);
+        point(stripes[i].hit.x * CELL_WIDTH, stripes[i].hit.y * CELL_HEIGHT);
+        stroke(255, 0, 255, 10);
+        line(pos.x, pos.y, stripes[i].hit.x * CELL_WIDTH, stripes[i].hit.y * CELL_HEIGHT);
+    }
     stroke(255, 0, 0);
-    translate(pos.x, pos.y);
-    line(0, 0, dir.x * 10, dir.y * 10);
+    // draw dir
+    line(pos.x, pos.y, pos.x + dir.x * 10, pos.y + dir.y * 10);
     pop();
 }
 

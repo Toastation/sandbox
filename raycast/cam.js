@@ -94,7 +94,7 @@ class Cam {
             this.intersections[i] = shortestDist;
             if (closestPoint) {
                 strokeWeight(1);
-                stroke(255);
+                stroke(255, 255, 255, 10);
                 line(this.pos.x, this.pos.y, closestPoint.x, closestPoint.y);
             }
         }
