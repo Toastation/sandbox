@@ -63,8 +63,6 @@ function renderScene() {
     fill(255);
     translate(PANEL_WIDTH, 0);
     render3D();
-    fill(255);
-    text("FPS: "+frameRate(), 0, 10);
 }
 
 function cast() {
