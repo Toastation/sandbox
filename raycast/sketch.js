@@ -54,8 +54,11 @@ function draw() {
     text("Fisheye = "+cam.fishEye, 10, 40);
     translate(0, MENU_HEIGHT);
 
-    cam.update();
-    cam.cast(walls);
+    push();
+    if (focused) {
+        cam.update();
+        cam.cast(walls);
+    }
 
     if (cam.pos.x < 0) cam.setPos(0, cam.pos.y);
     if (cam.pos.x > PANEL_WIDTH-1) cam.setPos(PANEL_WIDTH-1, cam.pos.y);
@@ -68,7 +71,13 @@ function draw() {
 
     cam.renderTopView();
     translate(PANEL_WIDTH, 0);
-    cam.renderScene(PANEL_WIDTH, PANEL_HEIGHT);
+    if (focused) cam.renderScene(PANEL_WIDTH, PANEL_HEIGHT);
+    pop();
+    if (!focused) {
+        noStroke();
+        fill(255, 255, 255, 25);
+        rect(0, 0, WIDTH, HEIGHT);
+    }
 }
 
 function keyPressed() {

@@ -53,16 +53,24 @@ function setup() {
 }
 
 function draw() {
-    inputs();
-    cast();
+    if (focused) {
+        inputs();
+        cast();
+    }
     renderScene();
 }
 function renderScene() {
     background(0);
     renderTopView();
     fill(255);
+    push();
     translate(PANEL_WIDTH, 0);
-    render3D();
+    if (focused) render3D();
+    pop();
+    if (!focused) {
+        fill(255, 255, 255, 25);
+        rect(0, 0, WIDTH, HEIGHT);
+    }
 }
 
 function cast() {
