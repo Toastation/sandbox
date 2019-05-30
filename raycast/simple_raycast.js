@@ -12,9 +12,10 @@ const CELL_HEIGHT = PANEL_HEIGHT / GRID_HEIGHT;
 let grid;
 let pos;
 let dir;
-// let plane;
 let fov;
 let dirAngle;
+let stripes;
+let stripesType;
 
 function generateGrid() {
     grid = new Array();
@@ -25,9 +26,10 @@ function generateGrid() {
         grid[x][GRID_HEIGHT-1] = 1;
     }
     for (let y = 0; y < GRID_HEIGHT; y++) {
-        grid[0][y] = 1;
-        grid[GRID_WIDTH-1][y] = 1;
+        grid[0][y] = 2;
+        grid[GRID_WIDTH-1][y] = 2;
     }
+    grid[3][6] = 1;
 }
 
 function setup() {
@@ -37,136 +39,146 @@ function setup() {
     dirAngle = 0;
     pos = createVector(PANEL_WIDTH / 2, PANEL_HEIGHT / 2);
     dir = p5.Vector.fromAngle(dirAngle);
-    // plane = createVector(0, 0.66);
     fov = 90;
+    stripes = [];
     angleMode(DEGREES);
 }
 
 function draw() {
+    inputs();
+    cast();
+    renderScene();
+}
+function renderScene() {
     background(0);
     renderTopView();
-    push();
+    fill(255);
     translate(PANEL_WIDTH, 0);
-    cast();
-    pop();
+    render3D();
+}
+
+function cast() {
+    stripes = [];    
+    stripesType = [];
+    const deltaAngle = fov / PANEL_WIDTH;
+    let mapPos = createVector();
+    let tilePos = createVector();
+    let offset = createVector();
+    let step = createVector();
+    let sideDist = createVector();
+    let deltaDistX;
+    let deltaDistY;
+    let rayDir;
+    let side; // 0=horizontal, 1=vertical 
+    let rayCount = 0;
+    for (let angle = dirAngle - fov / 2; angle < dirAngle + fov / 2; angle += deltaAngle) {
+        mapPos.x = pos.x / GRID_WIDTH;
+        mapPos.y = pos.y / GRID_HEIGHT;
+        tilePos.x = floor(mapPos.x);
+        tilePos.y = floor(mapPos.y);
+        offset.x = mapPos.x % 1;
+        offset.y = mapPos.y % 1;
+        rayDir = p5.Vector.fromAngle(radians(angle));
+        deltaDistX = sqrt(1 + (rayDir.y * rayDir.y) / (rayDir.x * rayDir.x));
+        deltaDistY = sqrt(1 + (rayDir.x * rayDir.x) / (rayDir.y * rayDir.y));
+        if (rayDir.x > 0) {
+            step.x = 1;
+            sideDist.x = (1 - offset.x) * deltaDistX;
+        } else {
+            step.x = -1;
+            sideDist.x = offset.x * deltaDistX;
+        }
+        if (rayDir.y > 0) {
+            step.y = 1;
+            sideDist.y = (1 - offset.y) * deltaDistY;
+        } else {
+            step.y = -1;
+            sideDist.y = offset.y * deltaDistY;
+        }
+        let wall = false;
+        let rayStep = 0;
+        while (!wall) {
+            if (sideDist.x < sideDist.y) {
+                sideDist.x += deltaDistX;
+                tilePos.x += step.x;
+                side = 0;
+            } else {
+                sideDist.y += deltaDistY;
+                tilePos.y += step.y;
+                side = 1;
+            }
+            if (grid[tilePos.x][tilePos.y] > 0) wall = true;
+            if (rayStep >= 1000) {
+                console.log("error raycasting, too many ray steps...");
+                break;
+            }
+            rayStep++;
+        }
+        let dist;
+        if (side == 0) dist = (tilePos.x - floor(mapPos.x) + (1 - step.x) / 2) / rayDir.x;
+        else           dist = (tilePos.y - floor(mapPos.y) + (1 - step.x) / 2) / rayDir.y;
+        stripes[rayCount] = PANEL_HEIGHT / dist;
+        stripesType[rayCount] = grid[tilePos.x][tilePos.y];
+        rayCount++;
+    }
 }
 
 function renderTopView() {
+    push();
     noStroke();
-    fill(255);
     for (let x = 0; x < GRID_WIDTH; x++) {
         for (let y = 0; y < GRID_HEIGHT; y++) {
-            if (grid[x][y] == 1) rect(x * GRID_WIDTH, y * GRID_HEIGHT, GRID_WIDTH, GRID_HEIGHT);
+            if (grid[x][y] == 1)      fill(255, 0, 0);
+            else if (grid[x][y] == 2) fill(0, 255, 0);
+            if (grid[x][y] > 0) rect(x * GRID_WIDTH, y * GRID_HEIGHT, GRID_WIDTH, GRID_HEIGHT);
         }
     }    
+    fill(255);
     ellipse(pos.x, pos.y, 5, 5);
     strokeWeight(2);
     stroke(255, 0, 0);
     translate(pos.x, pos.y);
     line(0, 0, dir.x * 10, dir.y * 10);
+    pop();
 }
 
-function cast() {
+function render3D() {
+    push();
     noStroke();
     fill(255, 0, 0);
-    const deltaAngle = fov / PANEL_WIDTH;
-    let tilePos = createVector();
-    let mapPos = createVector();
-    let offset = createVector();
-    let tileStep = createVector();
-    let step = createVector();
-    let intersection = createVector();   
-    let rayDir; 
-    for (let angle = dirAngle - fov / 2; angle < dirAngle + fov / 2; angle += deltaAngle) {
-        mapPos.x = pos.x / GRID_WIDTH;
-        mapPos.y = pos.y / GRID_HEIGHT;
-        tilePos.x = ceil(mapPos.x);
-        tilePos.y = ceil(mapPos.y);
-        offset.x = mapPos.x % 1;
-        offset.y = mapPos.y % 1;
-        rayDir = p5.Vector.fromAngle(radians(angle));
-        if (rayDir.x > 0) {
-            tileStep.x = 1;
-            step.y = 1 / tan(angle);
-            intersection.x = mapPos + offset.y / tan(angle);
-        } else {
-            tileStep.x = -1;
-            step.y = -1 / tan(angle);
-            intersection.x = mapPos - offset.y / tan(angle);
-        }
-        if (rayDir.y > 0) {
-            tileStep.y = 1;
-            step.x = tan(angle); 
-            intersection.y = mapPos + offset.y / tan(angle);
-        } else {
-            tileStep.y = -1;
-            step.x = -tan(angle);
-            intersection.y = mapPos - offset.y / tan(angle);
-        }
+    rectMode(CENTER);
+    for (let x = 0; x < stripes.length; x++) {
+        let height = stripes[x];
+        if (stripesType[x] == 1)      fill(255, 0, 0);
+        else if (stripesType[x] == 2) fill(0, 255, 0);
+        rect(x, PANEL_HEIGHT / 2, 1, height);
     }
-    // const deltaAngle = fov / PANEL_WIDTH;
-    // for (let angle = dirAngle - fov / 2; angle < dirAngle + fov / 2; dirAngle += deltaAngle) {
-    //     console.log(angle);   
-    // }
-    // let rayDir = createVector();
-    // let mapPos = createVector();
-    // let sideDist = createVector();
-    // let deltaDist = createVector();
-    // let step = createVector();
-    // let perpWallDist;
-    // let height;
-    // let hit = false;
-    // let side;
-    // for (let x = 0; x < PANEL_WIDTH; x++) {
-        // let camX = (2 * x / PANEL_WIDTH) - 1;
-        // rayDir.x = dir.x + plane.x * camX;
-        // rayDir.y = dir.y + plane.y * camX;
-        // mapPos.x = ceil(pos.x / GRID_WIDTH);
-        // mapPos.y = ceil(pos.y / GRID_HEIGHT);
-        // deltaDist.x = abs(1 / rayDir.x);
-        // deltaDist.y = abs(1 / rayDir.y);
+    pop();
+}
 
-        // if (rayDir < 0) {
-        //     step.x = -1;
-        //     sideDist.x = (pos.x - mapPos.x) * deltaDist.x;
-        // } else {
-        //     step.x = 1;
-        //     sideDist.x = (mapPos.x + 1 - pos.x) * deltaDist.x;
-        // }
-        // if (rayDir.y < 0) {
-        //     step.y = -1;
-        //     sideDist = (pos.y - mapPos.y) * deltaDist.y;
-        // } else {
-        //     step.y = 1;
-        //     sideDist = (mapPos.y + 1 - pos.y) * deltaDist.y;
-        // }
+function rotateCam(delta) {
+    dirAngle += delta;
+    dir = p5.Vector.fromAngle(radians(dirAngle));
+}
 
-        // console.log("mapPos : "+mapPos);
-        // console.log("rayDir : "+rayDir);
-        // console.log("deltaDist : "+deltaDist);
-        // console.log("step : "+step);
-        // console.log("--------------");
+function move(speed) {
+    let disp = dir.copy();
+    pos.add(disp.setMag(speed));
+}
 
-        // let i = 0;
-        // while (!hit) {
-        //     if (sideDist.x < sideDist.y) {
-        //         sideDist.x += deltaDist.x;
-        //         mapPos.x += step.x;
-        //         side = 0;
-        //     } else {
-        //         sideDist.y += deltaDist.y;
-        //         mapPos.y += step.y;
-        //         side = 1;
-        //     }
-
-        //     hit = grid[ceil(mapPos.x)][ceil(mapPos.y)] > 0;
-        //     if (i==1000) break;
-        //     i++
-        // }
-        // if (side == 0) perpWallDist = (mapPos.x - pos.x + (1 - step.x) / 2) / rayDir.x;
-        // else perpWallDist = (mapPos.y - pos.y + (1 - step.y) / 2) / rayDir.y;
-        // height = PANEL_HEIGHT * perpWallDist;
-        // rectMode(CENTER);
-        // rect(x, PANEL_HEIGHT / 2, 1, height);
-    // }
+function inputs() {
+    if (keyIsDown(LEFT_ARROW)) {
+        rotateCam(-1);
+    } else if (keyIsDown(RIGHT_ARROW)) {
+        rotateCam(1);
+    }
+    if (keyIsDown(UP_ARROW)) {
+        move(4);
+    } else if (keyIsDown(DOWN_ARROW)) {
+        move(-4);
+    }
+    if (pos.x < 0)                   pos.x = 0;
+    else if (pos.x > PANEL_WIDTH-1)  pos.x = PANEL_WIDTH-1;
+    if (pos.y < 0)                   pos.y = 0;
+    else if (pos.y > PANEL_HEIGHT-1) pos.y = PANEL_HEIGHT-1;
 }

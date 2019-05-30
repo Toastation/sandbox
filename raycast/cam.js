@@ -112,17 +112,6 @@ class Cam {
     }
 
     renderScene(sceneWidth, sceneHeight) {
-        // noStroke();
-        // rectMode(CORNER);
-        // strokeWeight(1);
-        // for (let y = sceneHeight / 2; y < sceneHeight; y++) {
-        //     stroke(map(y, sceneHeight / 2, sceneHeight, 0, 100));
-        //     line(0, y, sceneWidth, y);
-        // } 
-        // for (let y = 0; y < sceneHeight / 2; y++) {
-        //     stroke(map(y, 0, sceneHeight / 2, 100, 0));
-        //     line(0, y, sceneWidth, y);
-        // } 
         noStroke();
         rectMode(CENTER);
         const stripe = sceneWidth / this.nbRays;
