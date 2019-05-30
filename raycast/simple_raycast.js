@@ -4,8 +4,8 @@ const PANEL_WIDTH = 400;
 const PANEL_HEIGHT = 400;
 const MENU_HEIGHT = 50;
 
-const GRID_WIDTH = 20;
-const GRID_HEIGHT = 20;
+const GRID_WIDTH = 40;
+const GRID_HEIGHT = 40;
 const CELL_WIDTH = PANEL_WIDTH / GRID_WIDTH;
 const CELL_HEIGHT = PANEL_HEIGHT / GRID_HEIGHT;
 
@@ -71,8 +71,8 @@ function cast() {
     let side; // 0=horizontal, 1=vertical 
     let rayCount = 0;
     for (let angle = dirAngle - fov / 2; angle < dirAngle + fov / 2; angle += deltaAngle) {
-        mapPos.x = pos.x / GRID_WIDTH;
-        mapPos.y = pos.y / GRID_HEIGHT;
+        mapPos.x = pos.x / CELL_WIDTH;
+        mapPos.y = pos.y / CELL_HEIGHT;
         tilePos.x = floor(mapPos.x);
         tilePos.y = floor(mapPos.y);
         offset.x = mapPos.x % 1;
@@ -113,13 +113,21 @@ function cast() {
             }
             rayStep++;
         }
-        let dist;
-        if (side == 0) dist = (tilePos.x - floor(mapPos.x) + (1 - step.x) / 2) / rayDir.x;
-        else           dist = (tilePos.y - floor(mapPos.y) + (1 - step.y) / 2) / rayDir.y;
+        let dist, hit = createVector();
+        if (side == 0) {
+            dist = (tilePos.x - floor(mapPos.x) + (1 - step.x) / 2) / rayDir.x;
+            hit.x = mapPos.x < tilePos.x ? tilePos.x : tilePos.x + 1;
+            hit.x = mapPos.y + dist * rayDir.y;
+        } else {
+            dist = (tilePos.y - floor(mapPos.y) + (1 - step.y) / 2) / rayDir.y;
+            hit.x = mapPos.x + dist * rayDir.x;
+            hit.y = mapPos.y > tilePos.y ? tilePos.y + 1 : tilePos.y;
+        }           
         stripes[rayCount] = {
             height: PANEL_HEIGHT / dist,
             type: grid[tilePos.x][tilePos.y],
-            side: side
+            side: side,
+            hit: hit
         }
         rayCount++;
     }
@@ -127,14 +135,25 @@ function cast() {
 
 function renderTopView() {
     push();
+    // draw grid
+    strokeWeight(1);
+    stroke(255, 255, 255, 40);
+    for (let x = 0; x < GRID_WIDTH; x++) line(x * CELL_WIDTH, PANEL_HEIGHT, x * CELL_WIDTH, 0);
+    for (let y = 0; y < GRID_HEIGHT; y++) line(0, y * CELL_HEIGHT, PANEL_WIDTH, y * CELL_HEIGHT);
+    // draw walls
     noStroke();
+    const tilePos = createVector(floor(pos.x / CELL_WIDTH), floor(pos.y / CELL_HEIGHT));
     for (let x = 0; x < GRID_WIDTH; x++) {
         for (let y = 0; y < GRID_HEIGHT; y++) {
-            if (grid[x][y] == 1)      fill(255, 0, 0);
-            else if (grid[x][y] == 2) fill(0, 255, 0);
-            if (grid[x][y] > 0) rect(x * GRID_WIDTH, y * GRID_HEIGHT, GRID_WIDTH, GRID_HEIGHT);
+            fill(getWallColor(grid[x][y]));
+            if (grid[x][y] > 0) rect(x * CELL_WIDTH, y * CELL_HEIGHT, CELL_WIDTH, CELL_HEIGHT);
+            if (x == tilePos.x && y == tilePos.y) {
+                fill(255, 255, 255, 40);
+                rect(x * CELL_WIDTH, y * CELL_HEIGHT, CELL_WIDTH, CELL_HEIGHT);
+            }
         }
     }    
+    // draw cam
     fill(255);
     ellipse(pos.x, pos.y, 5, 5);
     strokeWeight(2);
@@ -150,12 +169,14 @@ function render3D() {
     rectMode(CENTER);
     let wallColor;
     for (let x = 0; x < stripes.length; x++) {
-        if (stripes[x].type == 1)      wallColor = color(255, 0, 0);
-        else if (stripes[x].type == 2) wallColor = color(0, 255, 0);
+        wallColor = getWallColor(stripes[x].type);                
         if (stripes[x].side == 0) darkenColor(wallColor);
         fill(wallColor);
         rect(x, PANEL_HEIGHT / 2, 1, stripes[x].height);
     }
+    fill(255);
+    noStroke();
+    text("tile = ["+floor(pos.x / CELL_WIDTH)+", "+floor(pos.y / CELL_HEIGHT)+"]", 100, 100);
     pop();
 }
 
@@ -190,4 +211,10 @@ function darkenColor(c) {
     c.setRed(red(c) / 2);
     c.setGreen(green(c) / 2);
     c.setBlue(blue(c) / 2);
+}
+
+function getWallColor(type) {
+    if (type == 1)      return color(255, 0, 0);
+    else if (type == 2) return color(0, 255, 0);
+    else                return color(0);
 }
