@@ -28,12 +28,13 @@ function generateGrid() {
         grid[0][y] = 2;
         grid[GRID_WIDTH-1][y] = 2;
     }
-    grid[3][6] = 1;
+    for (let i = 0; i < 10; i++) grid[floor(random(1, GRID_WIDTH-2))][floor(random(1, GRID_WIDTH-2))] = floor(random(1, 3));
 }
 
 function setup() {
     let canvas = createCanvas(WIDTH, HEIGHT);
     canvas.parent("sketch");
+    randomSeed(0x92837);
     generateGrid();
     dirAngle = 0;
     pos = createVector(PANEL_WIDTH / 2, PANEL_HEIGHT / 2);
