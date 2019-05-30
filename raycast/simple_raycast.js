@@ -15,7 +15,6 @@ let dir;
 let fov;
 let dirAngle;
 let stripes;
-let stripesType;
 
 function generateGrid() {
     grid = new Array();
@@ -117,8 +116,11 @@ function cast() {
         let dist;
         if (side == 0) dist = (tilePos.x - floor(mapPos.x) + (1 - step.x) / 2) / rayDir.x;
         else           dist = (tilePos.y - floor(mapPos.y) + (1 - step.y) / 2) / rayDir.y;
-        stripes[rayCount] = PANEL_HEIGHT / dist;
-        stripesType[rayCount] = grid[tilePos.x][tilePos.y];
+        stripes[rayCount] = {
+            height: PANEL_HEIGHT / dist,
+            type: grid[tilePos.x][tilePos.y],
+            side: side
+        }
         rayCount++;
     }
 }
@@ -145,13 +147,14 @@ function renderTopView() {
 function render3D() {
     push();
     noStroke();
-    fill(255, 0, 0);
     rectMode(CENTER);
+    let wallColor;
     for (let x = 0; x < stripes.length; x++) {
-        let height = stripes[x];
-        if (stripesType[x] == 1)      fill(255, 0, 0);
-        else if (stripesType[x] == 2) fill(0, 255, 0);
-        rect(x, PANEL_HEIGHT / 2, 1, height);
+        if (stripes[x].type == 1)      wallColor = color(255, 0, 0);
+        else if (stripes[x].type == 2) wallColor = color(0, 255, 0);
+        if (stripes[x].side == 0) darkenColor(wallColor);
+        fill(wallColor);
+        rect(x, PANEL_HEIGHT / 2, 1, stripes[x].height);
     }
     pop();
 }
@@ -181,4 +184,10 @@ function inputs() {
     else if (pos.x > PANEL_WIDTH-1)  pos.x = PANEL_WIDTH-1;
     if (pos.y < 0)                   pos.y = 0;
     else if (pos.y > PANEL_HEIGHT-1) pos.y = PANEL_HEIGHT-1;
+}
+
+function darkenColor(c) {
+    c.setRed(red(c) / 2);
+    c.setGreen(green(c) / 2);
+    c.setBlue(blue(c) / 2);
 }
