@@ -116,7 +116,7 @@ function cast() {
         }
         let dist;
         if (side == 0) dist = (tilePos.x - floor(mapPos.x) + (1 - step.x) / 2) / rayDir.x;
-        else           dist = (tilePos.y - floor(mapPos.y) + (1 - step.x) / 2) / rayDir.y;
+        else           dist = (tilePos.y - floor(mapPos.y) + (1 - step.y) / 2) / rayDir.y;
         stripes[rayCount] = PANEL_HEIGHT / dist;
         stripesType[rayCount] = grid[tilePos.x][tilePos.y];
         rayCount++;
