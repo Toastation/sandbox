@@ -11,3 +11,23 @@ html, body {
   justify-content: center;
   align-items: center;
 }
+
+iframe {
+  display: block;
+}
+
+.row {
+  width: 100%;
+  /*margin: 0 auto;*/
+    text-align: center;
+}
+.block {
+    width: 500px;
+  /*float: left;*/
+    display: inline-block;
+    zoom: 1;
+}
+
+ul {
+  text-align: left;
+}

@@ -9,7 +9,6 @@
   <script src="wall.js"></script>
   <script src="cam.js"></script>
   <script src="sketch.js"></script>
-  <script src="simple_raycast.js"></script>
   <link rel="stylesheet" type="text/css" href="style.css">
   <link type="text/css" rel="stylesheet"
     href="https://fonts.googleapis.com/css?family=Open+Sans:300,400,400italic,600,700,700italic">
@@ -22,20 +21,29 @@
 
   </div>
 
-  <div>
-    <h3>
-      Controls
-    </h3>
-    <ul>
-      <li>Move forward and backward with UP and DOWN arrows</li>
-      <li>Rotate with LEFT and RIGHT arrows</li>
-      <li>Press R to regenerate random walls</li>
-      <li>Press F to toggle fisheye view</li>
-    </ul>
-  </div>
-  <div id="sketch_simple" class="sketch_simple">
+  <div class="row">
+    <div id="sliders" class="block">
 
-  </div>  
+    </div>
+
+    <div class="block">
+      <h3>
+        Controls
+      </h3>
+      <ul>
+        <li>Move forward and backward with UP and DOWN arrows</li>
+        <li>Rotate with LEFT and RIGHT arrows</li>
+        <li>Press R to regenerate random walls</li>
+        <li>Press F to toggle fisheye view</li>
+      </ul>
+    </div>
+  </div>
+  
+  <div>
+    <h1 align="center">Wolfenstein-style raycasting</h1>
+    <h5 align="center"><i>click the canvas to take control</i></h5>
+    <p align="center"><iframe src="simple_raycast.html" width="800px" height="450px"></iframe></p>
+  </div>
 </body>
 
 </html>

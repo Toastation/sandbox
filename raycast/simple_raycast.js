@@ -41,6 +41,7 @@ function setup() {
     fov = 90;
     stripes = [];
     angleMode(DEGREES);
+    window.addEventListener("keydown", function(e) { if([32, 37, 38, 39, 40].indexOf(e.keyCode) > -1) e.preventDefault(); }, false);
 }
 
 function draw() {
@@ -181,9 +182,6 @@ function render3D() {
         fill(wallColor);
         rect(x, PANEL_HEIGHT / 2, 1, stripes[x].height);
     }
-    fill(255);
-    noStroke();
-    text("tile = ["+floor(pos.x / CELL_WIDTH)+", "+floor(pos.y / CELL_HEIGHT)+"]", 100, 100);
     pop();
 }
 
@@ -199,9 +197,9 @@ function move(speed) {
 
 function inputs() {
     if (keyIsDown(LEFT_ARROW)) {
-        rotateCam(-1);
+        rotateCam(-3);
     } else if (keyIsDown(RIGHT_ARROW)) {
-        rotateCam(1);
+        rotateCam(3);
     }
     if (keyIsDown(UP_ARROW)) {
         move(4);

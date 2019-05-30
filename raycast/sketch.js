@@ -30,12 +30,17 @@ function setup() {
     initWalls();
     generateWalls();
     cam = new Cam(100, 100, 45);
-    createP("<h5>Number of rays: </h5>");
+    let rayLabel = createP("<h5>Number of rays: </h5>");
     sliderRays = createSlider(10, PANEL_WIDTH, PANEL_WIDTH, 1);
     sliderRays.input(() => {const nbRays = sliderRays.value(); cam.setNbRays(nbRays); });
-    createP("<h5>FOV: </h5>");
+    let fovLabel = createP("<h5>FOV: </h5>", "sliders");
     sliderFOV = createSlider(0, 360, cam.fov, 1);
     sliderFOV.input(() => {const fov = sliderFOV.value(); cam.setFov(fov); });
+    fovLabel.parent("sliders");
+    sliderFOV.parent("sliders");
+    rayLabel.parent("sliders");
+    sliderRays.parent("sliders");
+    window.addEventListener("keydown", function(e) { if([32, 37, 38, 39, 40].indexOf(e.keyCode) > -1) e.preventDefault(); }, false);
 }
 
 function draw() {
