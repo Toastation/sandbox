@@ -1,5 +1,5 @@
 const WIDTH = 800;
-const HEIGHT = 450;
+const HEIGHT = 400;
 const PANEL_WIDTH = 400;
 const PANEL_HEIGHT = 400;
 const MENU_HEIGHT = 50;
@@ -8,9 +8,11 @@ const GRID_WIDTH = 40;
 const GRID_HEIGHT = 40;
 const CELL_WIDTH = PANEL_WIDTH / GRID_WIDTH;
 const CELL_HEIGHT = PANEL_HEIGHT / GRID_HEIGHT;
+const TEX_WIDTH = 64;
+const TEX_HEIGHT = 64;
 
 let grid;
-let pos;
+let pos, prevPos;
 let dir;
 let fov;
 let dirAngle;
@@ -31,6 +33,10 @@ function generateGrid() {
     for (let i = 0; i < 10; i++) grid[floor(random(1, GRID_WIDTH-2))][floor(random(1, GRID_WIDTH-2))] = floor(random(1, 3));
 }
 
+function preload() {
+    // img = loadImage("block.png");
+}
+
 function setup() {
     let canvas = createCanvas(WIDTH, HEIGHT);
     canvas.parent("sketch");
@@ -38,8 +44,9 @@ function setup() {
     generateGrid();
     dirAngle = 0;
     pos = createVector(PANEL_WIDTH / 2, PANEL_HEIGHT / 2);
+    prevPos = createVector(PANEL_WIDTH / 2, PANEL_HEIGHT / 2);
     dir = p5.Vector.fromAngle(dirAngle);
-    fov = 90;
+    fov = 65;
     stripes = [];
     angleMode(DEGREES);
     window.addEventListener("keydown", function(e) { if([32, 37, 38, 39, 40].indexOf(e.keyCode) > -1) e.preventDefault(); }, false);
@@ -56,6 +63,8 @@ function renderScene() {
     fill(255);
     translate(PANEL_WIDTH, 0);
     render3D();
+    fill(255);
+    text("FPS: "+frameRate(), 0, 10);
 }
 
 function cast() {
@@ -115,7 +124,7 @@ function cast() {
             }
             rayStep++;
         }
-        let dist, hit = createVector();
+        let dist, texX, hit = createVector();
         if (side == 0) {
             dist = (tilePos.x - mapPos.x + (1 - step.x) / 2) / rayDir.x;
             hit.x = mapPos.x < tilePos.x ? tilePos.x : tilePos.x + 1;
@@ -125,11 +134,15 @@ function cast() {
             hit.x = mapPos.x + dist * rayDir.x;
             hit.y = mapPos.y > tilePos.y ? tilePos.y + 1 : tilePos.y;
         }           
+        texX = floor(((hit.x - floor(hit.x)) * TEX_WIDTH));
+        if (side == 0 && rayDir.x > 0) texX = TEX_WIDTH - texX - 1;
+        if (side == 1 && rayDir.y < 0) texX = TEX_WIDTH - texX - 1;
         stripes[rayCount] = {
-            height: PANEL_HEIGHT / dist,
+            height: (PANEL_HEIGHT * 0.6) / dist,
             type: grid[tilePos.x][tilePos.y],
             side: side,
-            hit: hit
+            hit: hit,
+            texX: texX
         }
         rayCount++;
     }
@@ -186,6 +199,20 @@ function render3D() {
     pop();
 }
 
+function render3DTex() {
+    push();
+    loadPixels();
+    strokeWeight(1);
+    for (let x = 0; x < stripes.length; x++) {
+        const halfHeight = stripes[x].height * 0.5;
+        for (let y = PANEL_HEIGHT / 2 - halfHeight; y < PANEL_HEIGHT / 2 + halfHeight; y++) {
+            // set(x+PANEL_WIDTH, y, img.get(floor(stripes[x].texX), floor(map(y, PANEL_HEIGHT / 2 - halfHeight, PANEL_HEIGHT / 2 + halfHeight, 0, TEX_HEIGHT-1))));
+        }
+    }
+    updatePixels();
+    pop();
+}
+
 function rotateCam(delta) {
     dirAngle += delta;
     dir = p5.Vector.fromAngle(radians(dirAngle));
@@ -193,24 +220,30 @@ function rotateCam(delta) {
 
 function move(speed) {
     let disp = dir.copy();
+    prevPos.x = pos.x;
+    prevPos.y = pos.y;
     pos.add(disp.setMag(speed));
 }
 
+function checkCollision() {
+    return grid[floor(pos.x / CELL_WIDTH)][floor(pos.y / CELL_HEIGHT)] > 0;
+}
+
 function inputs() {
-    if (keyIsDown(LEFT_ARROW)) {
-        rotateCam(-3);
-    } else if (keyIsDown(RIGHT_ARROW)) {
-        rotateCam(3);
-    }
-    if (keyIsDown(UP_ARROW)) {
-        move(4);
-    } else if (keyIsDown(DOWN_ARROW)) {
-        move(-4);
-    }
+    if (keyIsDown(LEFT_ARROW))       rotateCam(-3);
+    else if (keyIsDown(RIGHT_ARROW)) rotateCam(3);
+    if (keyIsDown(UP_ARROW))         move(4);
+    else if (keyIsDown(DOWN_ARROW))  move(-4);
+
     if (pos.x < 0)                   pos.x = 0;
     else if (pos.x > PANEL_WIDTH-1)  pos.x = PANEL_WIDTH-1;
     if (pos.y < 0)                   pos.y = 0;
     else if (pos.y > PANEL_HEIGHT-1) pos.y = PANEL_HEIGHT-1;
+
+    if (checkCollision()) {
+        pos.x = prevPos.x;
+        pos.y = prevPos.y;
+    }
 }
 
 function darkenColor(c) {
