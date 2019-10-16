@@ -105,7 +105,7 @@ function setup() {
   let info1 = createP("<em>Please only use x and y as variables! Also only basic math functions are available.</em>");
   createDropdown();
   let info2 = createP("<h3>Presets: </h3>");
-  let info3 = createP("<h3>Usage: </h3>Use the settings gui to change parameters. <ul><li>Value is the right-side of the equation.</li><li>Epsilon is the distance to value from which points are drawn (hence the shading).</li><li>If |f(x,y)-value|<=epsilon then a point is drawn, the brighter it is, the closer it is from value.</li><li>Press R to redraw.</li></ul>");
+  let info3 = createP("<h3>Usage: </h3>Use the settings gui to change parameters. <ul><li>Value is the right-side of the equation.</li><li>Epsilon is the distance threshold.</li><li>If |f(x,y)-value|<=epsilon then a point is drawn, the brighter it is, the closer it is from value.</li><li>Press R to redraw.</li></ul>");
   let info4 = createP("<h3>Some interesting equations (presets):</h3><ul><li>Default: sin(y + x - y * tan(x))</li><li>Heart: x*x+(y-cbrt(x*x))*(y-cbrt(x*x))  <small><i>(value=1)</i></small></li><li>Circles: atan(sin(x))-sin(y)</li></ul> ");
   div.child(label);
   div.child(eqInput);

@@ -10,6 +10,7 @@ const CELL_WIDTH = PANEL_WIDTH / GRID_WIDTH;
 const CELL_HEIGHT = PANEL_HEIGHT / GRID_HEIGHT;
 const TEX_WIDTH = 64;
 const TEX_HEIGHT = 64;
+const NB_RAYS = 50;
 
 let grid;
 let pos, prevPos;
@@ -59,6 +60,7 @@ function draw() {
     }
     renderScene();
 }
+
 function renderScene() {
     background(0);
     renderTopView();
@@ -76,7 +78,7 @@ function renderScene() {
 function cast() {
     stripes = [];    
     stripesType = [];
-    const deltaAngle = fov / PANEL_WIDTH;
+    const deltaAngle = fov / NB_RAYS;
     let mapPos = createVector();
     let tilePos = createVector();
     let offset = createVector();
@@ -196,11 +198,12 @@ function render3D() {
     noStroke();
     rectMode(CENTER);
     let wallColor;
+    const rayWidth = PANEL_WIDTH / NB_RAYS; 
     for (let x = 0; x < stripes.length; x++) {
         wallColor = getWallColor(stripes[x].type);                
         if (stripes[x].side == 0) darkenColor(wallColor);
         fill(wallColor);
-        rect(x, PANEL_HEIGHT / 2, 1, stripes[x].height);
+        rect(x * rayWidth, PANEL_HEIGHT / 2, rayWidth, stripes[x].height);
     }
     pop();
 }
