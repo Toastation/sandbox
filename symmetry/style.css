@@ -1,0 +1,13 @@
+html, body {
+  margin: 0;
+  padding-left: 2%;
+  padding-right: 2%;
+  background: white;
+  color: black;
+  font-family: "Open Sans", sans-serif;
+}
+.sketch {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
