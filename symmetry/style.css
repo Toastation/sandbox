@@ -2,8 +2,8 @@ html, body {
   margin: 0;
   padding-left: 2%;
   padding-right: 2%;
-  background: white;
-  color: black;
+  background: black;
+  color: whitesmoke;
   font-family: "Open Sans", sans-serif;
 }
 .sketch {
