@@ -41,8 +41,9 @@ function animate() {
     }
     panimX = animX;
     panimY = animY;
-    let deltaAngle = cos(millis() * 0.01);
-    let disp = randomGaussian(2, 0.5);
+    let deltaAngle = cos(millis() * 0.01) * randomGaussian(3, 1);
+    // let deltaAngle = randomGaussian(40, 10);
+    let disp = randomGaussian(10, 0.5);
     animX = animX + disp * cos(deltaAngle);
     animY = animY + disp * sin(deltaAngle);
     drawLineWithSymmetry(originX, originY, animX, animY, panimX, panimY);
