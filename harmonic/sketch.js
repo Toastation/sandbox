@@ -1,12 +1,13 @@
 let sketch1D = new p5((sketch) => {
-  const WIDTH = 600;
-  const HEIGHT = 600;
+  const WIDTH = 800;
+  const HEIGHT = 400;
 
   let plot;
   let nbData = 50;
   let points = [];
   let fixed = [];
   let colors = [];
+  let sizes = [];
   let t = 0;
   let dtAcc = 0;
   let ups = 40;
@@ -20,26 +21,22 @@ let sketch1D = new p5((sketch) => {
 
     plot = new GPlot(sketch);
     plot.setPos(0, 0);
-    plot.setDim(500, 500);
-    plot.updateLimits();
+    plot.setDim(350, 300);
     plot.setPoints(points);
+    plot.updateLimits();
 
     colors = Array(nbData).fill(sketch.color(255, 0, 255, 255));
     colors.forEach((e, i) => {
       if (fixed[i]) colors[i] = sketch.color(100, 0, 255, 255);
     });
+    sizes = Array(nbData).fill(6);
     sketch.textSize(16);
   };
 
   sketch.draw = function() {
     sketch.background(255);
 
-    plot.beginDraw();
-    plot.drawXAxis();
-    plot.drawYAxis();
-    plot.setPointColors(colors);
-    plot.getMainLayer().drawPoints();
-    plot.endDraw();
+    drawPlot(plot);
 
     // update points
     if (ups == 0) return;
@@ -53,7 +50,7 @@ let sketch1D = new p5((sketch) => {
     dtAcc += sketch.deltaTime;
   };
 
-  function diffusionUpdate() {
+  function diffusionUpdate() { 
     let newValues = Array.from(points);
     for (var i = 0; i < nbData; i++) {
       if (fixed[i]) {
@@ -77,8 +74,19 @@ let sketch1D = new p5((sketch) => {
     });
     fixed[0] = true;
     fixed[nbData-1] = true;
-    fixed[Math.trunc(nbData/2)] = true;
-    points[Math.trunc(nbData/2)].y = 30;
+    points[nbData-1].y = 30;
+    // fixed[Math.trunc(nbData/2)] = true;
+    // points[Math.trunc(nbData/2)].y = 30;
     t = 0;
+  }
+
+  function drawPlot(p) {
+    p.beginDraw();
+    p.drawXAxis();
+    p.drawYAxis();
+    p.setPointColors(colors);
+    p.setPointSizes(sizes);
+    p.getMainLayer().drawPoints();
+    p.endDraw();
   }
 });
