@@ -10,7 +10,7 @@ let sketch2D = new p5((sketch) => {
     let t = 0, dtAcc = 0;
   
     sketch.setup = function() {
-      let canvas = sketch.createCanvas(WIDTH, HEIGHT);
+      let canvas = sketch.createCanvas(WIDTH+300, HEIGHT);
       canvas.parent("harmo2d");
       sketch.frameRate(60);
 
@@ -37,8 +37,12 @@ let sketch2D = new p5((sketch) => {
         sketch.text(sketch.str(sketch.round(grid[Math.ceil(sketch.mouseX/CW)-1][Math.ceil(sketch.mouseY/CH)-1], 2)), sketch.mouseX, sketch.mouseY);
       }
 
+      sketch.textAlign(sketch.LEFT);
+      sketch.text("Average laplacian\nover the non-constrained\nsurface : " 
+                  + sketch.str(sketch.round(avgLap/((GW-1)*(GH-1)), 5)), WIDTH + 10, HEIGHT / 2);
+
       if (dtAcc > 200) {
-        updateGrid();
+        avgLap = updateGrid();
         t++;
         dtAcc = 0;
       }
@@ -74,15 +78,17 @@ let sketch2D = new p5((sketch) => {
         fixed[0][j] = true;
         fixed[GH-1][j] = true;
       }
+      avgLap = 0;
     } 
 
     function updateGrid() {
       let di = [-1, 1, 0, 0];
       let dj = [0, 0, 1, -1];
+      let sum = 0;
       // create buffer
       let buffer = [];
       for (var i = 0; i < GH; i++)
-        buffer[i] = grid[i].slice(); 
+        buffer[i] = grid[i].slice();
       // compute and set avg of each cell
       for (var i = 0; i < GH; i++) {
         for (var j = 0; j < GW; j++) {
@@ -97,8 +103,10 @@ let sketch2D = new p5((sketch) => {
           }
           tot /= nbNeighbors;
           grid[i][j] = tot;
+          sum += Math.abs(tot - buffer[i][j]);
         }
       }
+      return sum;
     }
 
     function inside(i, j) {
