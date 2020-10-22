@@ -37,6 +37,7 @@ let sketch2D = new p5((sketch) => {
         sketch.text(sketch.str(sketch.round(grid[Math.ceil(sketch.mouseX/CW)-1][Math.ceil(sketch.mouseY/CH)-1], 2)), sketch.mouseX, sketch.mouseY);
       }
 
+      sketch.fill(0);
       sketch.textAlign(sketch.LEFT);
       sketch.text("Average laplacian\nover the non-constrained\nsurface : " 
                   + sketch.str(sketch.round(avgLap/((GW-1)*(GH-1)), 5)), WIDTH + 10, HEIGHT / 2);
