@@ -1,15 +1,18 @@
-const WIDTH = 400;
-const HEIGHT = 400;
+const WIDTH = 800;
+const HEIGHT = 600;
 const CELL_SIZE = 10;
-const GRID_WIDTH = 50;
-const GRID_HEIGHT = 50;
-const GRID_DEPTH = 50;
+var GRID_WIDTH = 30;
+var GRID_HEIGHT = 30;
+var GRID_DEPTH = 30;
 
 var cam;
-var grid, gridBis;
+var grid, gridBis, neighborsGrid;
 var birth = 12;
 var survival = 10;
 var dtAcc = 0;
+var speed = 1, speedMin = 0.5, speedMax = 4, speedStep = 0.1;
+var boxSize = 30, boxSizeMax = 50, boxSizeMin = 14;
+var lastBoxSize = boxSize;
 
 function setup() {
   createCanvas(WIDTH, HEIGHT, WEBGL);
@@ -17,24 +20,30 @@ function setup() {
   cam = new Dw.EasyCam(this._renderer, {distance : 300});
   cam.zoom(0.1);
   createGrid();
+  gui = createGui('Settings');
+  gui.addGlobals("speed", "boxSize");
 }
 
 function createGrid() {
   grid = new Array(GRID_WIDTH);
   gridBis = new Array(GRID_WIDTH);
+  neighborsGrid = new Array(GRID_WIDTH);
   for (var i = 0; i < GRID_WIDTH; i++) {
     grid[i] = new Array(GRID_HEIGHT);
     gridBis[i] = new Array(GRID_HEIGHT);
+    neighborsGrid[i] = new Array(GRID_HEIGHT);
     for (var j = 0; j < GRID_HEIGHT; j++) {
       grid[i][j] = new Array(GRID_DEPTH);
       gridBis[i][j] = new Array(GRID_DEPTH);
+      neighborsGrid[i][j] = new Array(GRID_DEPTH);
       for (var k = 0; k < GRID_DEPTH; k++) {
         grid[i][j][k] = 0;
         gridBis[i][j][k] = grid[i][j][k];
+        neighborsGrid[i][j][k] = 0;
       }
     }
   }
-  grid[10][10][10] = 1;
+  grid[round(GRID_WIDTH/2)][round(GRID_HEIGHT/2)][round(GRID_DEPTH/2)] = 1;
 }
 
 function draw() {
@@ -43,25 +52,38 @@ function draw() {
 }
 
 function drawGrid() {
-  translate(-100, 0, -400);
+  translate(-(GRID_WIDTH/2)*CELL_SIZE, -(GRID_HEIGHT/2)*CELL_SIZE, -GRID_DEPTH*CELL_SIZE-30);
+  stroke(255);
+  fill(0, 0, 0, 0);
+  push();
+  translate((GRID_WIDTH/2)*CELL_SIZE-CELL_SIZE/2, (GRID_HEIGHT/2)*CELL_SIZE-CELL_SIZE/2, (GRID_DEPTH/2)*CELL_SIZE-CELL_SIZE/2);
+  box(GRID_WIDTH*CELL_SIZE, GRID_WIDTH*CELL_SIZE, GRID_WIDTH*CELL_SIZE);
+  pop();
+  fill(255);
+  stroke(0);
   for (var i = 0; i < GRID_WIDTH; i++) {
     for (var j = 0; j < GRID_HEIGHT; j++) {
       for (var k = 0; k < GRID_DEPTH; k++) {
         if (grid[i][j][k] == 0) continue;
         push();
         translate(i*CELL_SIZE, j*CELL_SIZE, k*CELL_SIZE);
+        fill(map(i, 0, GRID_WIDTH, 100, 255), 0, 0);
         box(CELL_SIZE, CELL_SIZE, CELL_SIZE);
         pop();
       }
     }
   }
-  if (frameCount % 48 == 0) {
-    console.log("test");
-    update();
+  if (frameCount % round(24 / speed) == 0) {
+    updateCristal();
+  }
+  if (lastBoxSize != boxSize) {
+    GRID_WIDTH = GRID_HEIGHT = GRID_DEPTH = boxSize;
+    lastBoxSize = boxSize;
+    createGrid();
   }
 }
 
-function update() {
+function updateCristal() {
   // copy array
   for (var i = 0; i < GRID_WIDTH; i++)
     for (var j = 0; j < GRID_HEIGHT; j++)
@@ -73,6 +95,7 @@ function update() {
     for (var j = 0; j < GRID_HEIGHT; j++) {
       for (var k = 0; k < GRID_DEPTH; k++) {
         neighbors = getNeighborNeumann(i, j, k);
+        neighborsGrid[i][j][k] = neighbors;
         state = gridBis[i][j][k];
         if (state == 0 && (neighbors ==1 || neighbors == 3)  )
           grid[i][j][k] = 1; 
@@ -99,12 +122,6 @@ function getNeighborCount(x, y, z) {
     }
   }
   return count;
-  // if (grid[(x-1+GRID_WIDTH)%GRID_WIDTH][y][z] > 0) count++;   // l
-  // if (grid[(x-1+GRID_WIDTH)%GRID_WIDTH][(y+1+GRID_HEIGHT)%GRID_HEIGHT][z] > 0) count++;    // tl
-  // if (grid[(x-1+GRID_WIDTH)%GRID_WIDTH][(y-1+GRID_HEIGHT)%GRID_HEIGHT][z] > 0) count++;   // lb
-  // if (grid[x][(y+1+GRID_HEIGHT)%GRID_HEIGHT][z] > 0) count++; // t
-  // if (grid[x][(y-1+GRID_HEIGHT)%GRID_HEIGHT][z] > 0) count++; // b
-  // if (grid[(x-1+GRID_WIDTH)%GRID_WIDTH][y][z] > 0) count++;   // l
 
 }
 
