@@ -5,7 +5,6 @@ import { BufferGeometryUtils } from './libraries/threejs/BufferGeometryUtils.js'
 
 const WIDTH = 800;
 const HEIGHT = 600;
-const RADIAL_SEG = 8;
 
 const canvas = document.querySelector("#harmo3d");
 const renderer = new THREE.WebGLRenderer({canvas});
