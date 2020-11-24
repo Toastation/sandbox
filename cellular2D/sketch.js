@@ -1,13 +1,24 @@
-const WIDTH = 800;
-const HEIGHT = 600;
+const WIDTH = 1200;
+const HEIGHT = 550;
 const GW = 100; // grid width
 const GH = 100; // grid height
 const CS = 5; // cell size (rect)
+const CELLS = GW * GH;
 
 let grid;
 
-var density = 0.55;
+var density = 0.5;
+var currentDensity = 0;
+var growthProba = 0.002;
+var randomStrikeProba = 0.00002;
+var consecutiveUnchanged = 0;
+var stable = false;
+var stableThreshold = 10;
 
+var updatePerSecond = 60;
+var msAcc = 0;
+
+var colors;
 const nstates = 3;
 const states = {
   BLANK: 0,
@@ -15,7 +26,17 @@ const states = {
   FIRE: 2
 };
 
-var colors;
+// ui stuff
+let initDensitySlider;
+let strikeProbaSlider;
+let growthProbaSlider;
+let resetSliderButton;
+let speedSlider;
+
+
+// TODO: 
+// - nb of iterations to get stable
+// - current density
 
 function setup() {
   createCanvas(WIDTH, HEIGHT);
@@ -25,24 +46,41 @@ function setup() {
 
   textSize(16);
   textFont("Consolas");
+
+  let d0 = createDiv("Speed: ");
+  speedSlider = createSlider(0, 60, updatePerSecond, 1);
+  speedSlider.parent(d0);
+  let d1 = createDiv("Initial density: ");
+  initDensitySlider = createSlider(0, 1, density, 0.01)
+  initDensitySlider.parent(d1);
+  let d2 = createDiv("Random fire probability: ");
+  strikeProbaSlider = createSlider(0, 0.0001, randomStrikeProba, 0.00001)
+  strikeProbaSlider.parent(d2);
+  let d3 = createDiv("Random tree growth probability: ");
+  growthProbaSlider = createSlider(0, 0.01, growthProba, 0.0001);
+  growthProbaSlider.parent(d3);
+  resetSliderButton = createButton("Reset values");
+  resetSliderButton.mousePressed(resetSliders);
+  let resetDensity = createButton("Reset tree density");
+  resetDensity.mousePressed(reset);
 }
 
 function draw() {
   background(255);
-  noStroke();
-  for (var i = 0; i < GW; i++) {
-    for (var j = 0; j < GH; j++) {
-      if (grid[i][j] != states.BLANK) {
-        fill(colors[grid[i][j]]);
-        rect(i*CS, j*CS, CS, CS);
-      }
-    }
-  }
 
+  drawGrid();
   drawInfo();
 
-  if (frameCount % 60)
-    updateGrid();
+  updateSliders();
+  
+  if (updatePerSecond > 0 && msAcc >= (1000 / updatePerSecond)) {
+    let gridChanged = updateGrid();
+    if (!gridChanged) consecutiveUnchanged += 1;
+    else consecutiveUnchanged = 0;
+    stable = consecutiveUnchanged >= stableThreshold;
+    msAcc = 0;
+  }
+  msAcc += deltaTime;
 }
 
 function initGrid() {
@@ -55,20 +93,73 @@ function initGrid() {
   }
 }
 
-function updateGrid() {
+function drawGrid() {
+  noStroke();
   for (var i = 0; i < GW; i++) {
     for (var j = 0; j < GH; j++) {
-      if (grid[i][j] == states.BLANK)
-        continue;
-      else if (grid[i][j] == states.FIRE)
-        grid[i][j] = states.BLANK;
-      else if (grid[i][j] == states.TREE) {
-        let count = getNeighborhoodCount(i, j);
-        if (count[states.FIRE] >= 1)
-          grid[i][j] = states.FIRE;
+      if (grid[i][j] != states.BLANK) {
+        fill(colors[grid[i][j]]);
+        rect(i*CS, j*CS, CS, CS);
       }
     }
   }
+}
+
+function updateGrid() {
+  currentDensity = 0;
+  let hasChanged = false;
+  for (var i = 0; i < GW; i++) {
+    for (var j = 0; j < GH; j++) {
+      switch (grid[i][j]) {
+        case states.BLANK:
+          if (random() < growthProba) {
+            grid[i][j] = states.TREE;
+            hasChanged = true;
+            currentDensity += 1;
+          }
+          break;
+        case states.TREE:
+          let neighborStates = getNeighborhoodCount(i, j);
+          if (neighborStates[states.FIRE] >= 1 || random() < randomStrikeProba) {
+            grid[i][j] = states.FIRE;
+            hasChanged = true;
+          }
+          else 
+            currentDensity += 1;
+          break;
+        case states.FIRE:
+          grid[i][j] = states.BLANK;
+          hasChanged = true;
+          break;
+      }
+    }
+  }
+  currentDensity = round(currentDensity / CELLS, 2);
+  return hasChanged;
+}
+
+function reset() {
+  initGrid();
+  consecutiveUnchanged = 0;
+  stable = false;
+}
+
+function resetSliders() {
+  updatePerSecond = 60;
+  density = 0.5;
+  growthProba = 0.002;
+  randomStrikeProba = 0.00002;
+  initDensitySlider.value(density);
+  growthProbaSlider.value(growthProba);
+  strikeProbaSlider.value(randomStrikeProba);
+  speedSlider.value(updatePerSecond);
+}
+
+function updateSliders() {
+  density = initDensitySlider.value();
+  randomStrikeProba = strikeProbaSlider.value();
+  growthProba = growthProbaSlider.value();
+  updatePerSecond = speedSlider.value();
 }
 
 // state histogram for the neighborhood of the cell (i, j)
@@ -92,12 +183,21 @@ function mouseClicked() {
     grid[cx][cy] = states.FIRE;
 }
 
+function keyPressed() {
+  if (key == "R" || key == "r")
+    reset();
+}
+
 function drawInfo() {
   fill(0);
   let xOffset = GW * CS + 10;
   text("Left-click to place fire", xOffset, 20);
+  text("R to reset", xOffset, 40);
 
-  text("Stats", xOffset, 80);
-  text("Forest density: " + str(density), xOffset, 100);
-
+  text("STATS", xOffset, 100);
+  text("Initial target density: " + str(density), xOffset, 120);
+  text("Current density: " + str(currentDensity), xOffset, 140);
+  text("Random fire probability: " + str(randomStrikeProba), xOffset, 180);
+  text("Random tree growth probability: " + str(growthProba), xOffset, 200);
+  text("Stable: " + str(stable), xOffset, 240);
 }
