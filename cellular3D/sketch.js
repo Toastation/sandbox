@@ -1,9 +1,9 @@
 const WIDTH = 800;
 const HEIGHT = 600;
 const CELL_SIZE = 10;
-var GRID_WIDTH = 30;
-var GRID_HEIGHT = 30;
-var GRID_DEPTH = 30;
+var GRID_WIDTH = 20;
+var GRID_HEIGHT = 20;
+var GRID_DEPTH = 20;
 
 var cam;
 var grid, gridBis, neighborsGrid;
@@ -11,7 +11,7 @@ var birth = 12;
 var survival = 10;
 var dtAcc = 0;
 var speed = 1, speedMin = 0.5, speedMax = 4, speedStep = 0.1;
-var boxSize = 30, boxSizeMax = 50, boxSizeMin = 14;
+var boxSize = 20, boxSizeMax = 50, boxSizeMin = 14;
 var lastBoxSize = boxSize;
 
 function setup() {
@@ -22,6 +22,8 @@ function setup() {
   createGrid();
   gui = createGui('Settings');
   gui.addGlobals("speed", "boxSize");
+  createP("");
+  createA("https://toastation.github.io/vis/cellular2D/index.html", "2D cellular automata (forest fire)");
 }
 
 function createGrid() {

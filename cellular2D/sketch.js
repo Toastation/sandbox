@@ -63,6 +63,10 @@ function setup() {
   resetSliderButton.mousePressed(resetSliders);
   let resetDensity = createButton("Reset tree density");
   resetDensity.mousePressed(reset);
+  createP("");
+  createA("https://www.fourmilab.ch/cellab/webca/?ruleprog=forest", "Inspired by this");
+  createP("");
+  createA("https://toastation.github.io/vis/cellular3D/index.html", "3D cellular automata (crystal growth)");
 }
 
 function draw() {
