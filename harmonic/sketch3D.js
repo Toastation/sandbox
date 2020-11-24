@@ -128,7 +128,7 @@ function initWeights() {
         constrained[i] = positions[i].z < -0.99 || positions[i].z > 0.99; // top and bottom vertices of the cylinder
         if (positions[i].z < -0.99) weights[i] = 1.0;
         else if (positions[i].z > 0.99) weights[i] = 0.0;
-        else weights[i] = Math.random();
+        else weights[i] = (positions[i].z + 1) / 2;
     }
 }
 
@@ -288,4 +288,8 @@ function copyArray(src, dst) {
     for (var i = 0; i < dst.length; i++) {
         dst[i] = src[i];
     }
+}
+
+function lerp(a, b, t) {
+    return a * (1 - t) + b * t;
 }
