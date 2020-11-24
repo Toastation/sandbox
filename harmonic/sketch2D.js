@@ -26,10 +26,13 @@ let sketch2D = new p5((sketch) => {
       for (var i = 0; i < GH; i++) {
         for (var j = 0; j < GW; j++) {
           sketch.fill(colors[Math.ceil(sketch.map(grid[i][j], 0, 1, 0, 19))]);
+          if (fixed[i][j])
+            sketch.strokeWeight(1);
+          else
+            sketch.strokeWeight(0);
           sketch.rect(j*CW, i*CH, CW, CH);
         }
       }
-
       if (insideWindow(sketch.mouseX, sketch.mouseY)) {
         sketch.fill(255);
         sketch.strokeWeight(0);

@@ -11,6 +11,9 @@ let sketch1D = new p5((sketch) => {
   let t = 0;
   let dtAcc = 0;
   let ups = 40;
+  let y0 = 15;
+
+  let slider;
 
   sketch.setup = function() {
     let canvas = sketch.createCanvas(WIDTH, HEIGHT);
@@ -31,12 +34,18 @@ let sketch1D = new p5((sketch) => {
     });
     sizes = Array(nbData).fill(6);
     sketch.textSize(16);
+    slider = sketch.createSlider(0, 30, y0, 1);
+    let d1 = sketch.createDiv("Y0: ")
+    d1.parent("slider1d");
+    slider.parent(d1);
   };
 
   sketch.draw = function() {
     sketch.background(255);
 
     drawPlot(plot);
+
+    y0 = slider.value();
 
     // update points
     if (ups == 0) return;
@@ -70,9 +79,10 @@ let sketch1D = new p5((sketch) => {
 
   function resetData() {
     points = new Array(nbData).fill().map((e, i) => {
-      return new GPoint(i, 0);
+      return new GPoint(i, y0);
     });
     fixed[0] = true;
+    points[0].y = 0;
     fixed[nbData-1] = true;
     points[nbData-1].y = 30;
     // fixed[Math.trunc(nbData/2)] = true;
