@@ -220,7 +220,7 @@ function forceFire() {
   do {
     rx = floor(random(0, GW));
     ry = floor(random(0, GH));
-  } while (grid[rx][ry] != 1);
+  } while (grid[rx][ry] & 1 != 0);
   grid[rx][ry] = 3;
   consecutiveUnchanged = 0;
 }
