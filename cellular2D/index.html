@@ -10,9 +10,34 @@
 
     <script src="libraries/p5.min.js"></script>
     <script src="libraries/p5.sound.min.js"></script>
+    <script src="libraries/grafica.min.js"></script>
   </head>
 
   <body>
     <script src="sketch.js"></script>
+
+    <div id="cellular"></div>
+
+    <h2>Some notes</h2>
+
+    <h4>Testing percolation without fire and tree dynamics</h4>
+    <p>
+      A first way to test percolation is to set random fire probability and tree growth to 0, and resetting the tree density to the desired value (with the button).
+      <br />
+      Then we can either left-click on the canvas or click on the "Force random fire" button to start a fire and see whether or not the whole forest died.
+      <br />
+      As expected we get different results depending on whether the Von Neumann or Moore neighborhood is used.
+      <br />
+      <ul>
+        <li><b>Von neumann: </b>d ≈ 0.55</li>
+        <li><b>Moore: </b>d ≈ 0.40</li>
+      </ul>
+    </p>
+    <h4>Percolation with fire and tree dynamics</h4>
+    <p>
+      When fire and tree dynamics is activated (i.e the probability of fire & tree growth > 0) the tree density cycles over time between a near 0 value
+      and the percolation value discussed in the last paragraph.
+
+    </p>
   </body>
 </html>
